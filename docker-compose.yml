@@ -1,0 +1,51 @@
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: biblioteca_mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_DATABASE: ${DB_NAME:-biblioteca}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-password}"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - biblioteca_network
+
+  backend:
+    build: ./backend
+    container_name: biblioteca_backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_USER=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_NAME=${DB_NAME:-biblioteca}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-clave-segura-por-defecto}
+      - FLASK_DEBUG=${FLASK_DEBUG:-True}
+      - FLASK_ENV=${FLASK_ENV:-development}
+    volumes:
+      - ./backend:/app
+    networks:
+      - biblioteca_network
+    command: >
+      sh -c "sleep 5 &&
+             python __init__db.py &&
+             python run.py"
+
+volumes:
+  mysql_data:
+
+networks:
+  biblioteca_network:
+    driver: bridge

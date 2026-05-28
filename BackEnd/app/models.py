@@ -80,7 +80,7 @@ class Libro(db.Model):
     anio_publicacion = db.Column(db.Integer)
     cantidad_disponible = db.Column(db.Integer, default=1)
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
-    isbn = db.Column(db.Integer, unique=True, nullable=False)
+    isbn = db.Column(db.String(20), unique=True, nullable=False)
     
     # Relación prestamo con libro
     prestamos = db.relationship('Prestamo', backref='libro', lazy=True)
