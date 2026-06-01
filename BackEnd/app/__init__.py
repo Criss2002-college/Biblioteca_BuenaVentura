@@ -26,12 +26,13 @@ def create_app(config_name='default'):
     bcrypt.init_app(app)
     
     # Registrar blueprints (solo los que existen)
-    from .routes import auth, libros, autores, editoriales, usuarios
+    from .routes import auth, libros, autores, editoriales, usuarios, prestamos
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(libros.bp)
     app.register_blueprint(autores.bp)
     app.register_blueprint(editoriales.bp)
     app.register_blueprint(usuarios.bp)
+    app.register_blueprint(prestamos.bp)
     
     return app
