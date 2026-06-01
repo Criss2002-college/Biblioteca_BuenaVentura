@@ -26,6 +26,7 @@ class Usuario(db.Model):
     telefono = db.Column(db.Integer)
     password_hash = db.Column(db.String(255), nullable=False)
     rol_id = db.Column(db.Integer, db.ForeignKey('roles.rol_id'), nullable=False)
+    activo = db.Column(db.Boolean, default=True) 
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     
     def set_password(self, password):
@@ -81,6 +82,7 @@ class Libro(db.Model):
     cantidad_disponible = db.Column(db.Integer, default=1)
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     isbn = db.Column(db.String(20), unique=True, nullable=False)
+    activo = db.Column(db.Boolean, default=True) 
     
     # Relación prestamo con libro
     prestamos = db.relationship('Prestamo', backref='libro', lazy=True)
