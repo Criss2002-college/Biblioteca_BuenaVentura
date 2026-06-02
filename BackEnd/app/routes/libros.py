@@ -18,6 +18,12 @@ def verificar_permiso_gestion(usuario_id):
         return False
     return usuario.rol_id in [1, 2]
 
+def verificar_es_admin(usuario_id):
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return False
+    return usuario.rol_id == 2
+
 def libro_a_dict(libro):
     """Convierte objeto Libro a diccionario"""
     return {
@@ -59,6 +65,28 @@ def obtener_libro(libro_id):
             return jsonify({'success': False, 'error': 'Libro no encontrado'}), 404
         
         return jsonify({'success': True, 'data': libro_a_dict(libro)}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+@bp.route('/inactivos', methods=['GET'])
+@jwt_required()
+def obtener_libros_inactivos():
+    """Obtener todos los libros inactivos (solo Administrador)"""
+    try:
+        current_user = obtener_usuario_actual()
+        
+        if not verificar_es_admin(current_user['usuario_id']):
+            return jsonify({
+                'success': False, 
+                'error': 'No tienes permiso para ver libros inactivos'
+            }), 403
+        
+        libros = Libro.query.filter_by(activo=False).all()
+        return jsonify({
+            'success': True,
+            'data': [libro_a_dict(libro) for libro in libros],
+            'total': len(libros)
+        }), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -176,12 +204,11 @@ def actualizar_libro(libro_id):
 @bp.route('/<int:libro_id>', methods=['DELETE'])
 @jwt_required()
 def eliminar_libro(libro_id):
-    """Eliminar un libro (solo Administrador)"""
+    """Borrado lógico de libro (solo Administrador)"""
     try:
         current_user = obtener_usuario_actual()
-        usuario = Usuario.query.get(current_user['usuario_id'])
         
-        if not usuario or usuario.rol_id != 2:
+        if not verificar_es_admin(current_user['usuario_id']):
             return jsonify({
                 'success': False, 
                 'error': 'No tienes permiso para eliminar libros. Solo administradores.'
@@ -191,6 +218,10 @@ def eliminar_libro(libro_id):
         if not libro:
             return jsonify({'success': False, 'error': 'Libro no encontrado'}), 404
         
+        if not libro.activo:
+            return jsonify({'success': False, 'error': 'El libro ya está inactivo'}), 400
+        
+        # Verificar si el libro tiene préstamos activos
         prestamos_activos = [p for p in libro.prestamos if p.id_estado == 1]
         if prestamos_activos:
             return jsonify({
@@ -198,12 +229,46 @@ def eliminar_libro(libro_id):
                 'error': 'No se puede eliminar el libro porque tiene préstamos activos'
             }), 400
         
-        db.session.delete(libro)
+        # Borrado lógico
+        libro.activo = False
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'Libro eliminado exitosamente'
+            'message': 'Libro desactivado exitosamente (borrado lógico)'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/<int:libro_id>/reactivar', methods=['PUT'])
+@jwt_required()
+def reactivar_libro(libro_id):
+    """Reactivar un libro inactivo (solo Administrador)"""
+    try:
+        current_user = obtener_usuario_actual()
+        
+        if not verificar_es_admin(current_user['usuario_id']):
+            return jsonify({
+                'success': False, 
+                'error': 'No tienes permiso para reactivar libros. Solo administradores.'
+            }), 403
+        
+        libro = Libro.query.get(libro_id)
+        if not libro:
+            return jsonify({'success': False, 'error': 'Libro no encontrado'}), 404
+        
+        if libro.activo:
+            return jsonify({'success': False, 'error': 'El libro ya está activo'}), 400
+        
+        libro.activo = True
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Libro reactivado exitosamente',
+            'data': libro_a_dict(libro)
         }), 200
         
     except Exception as e:

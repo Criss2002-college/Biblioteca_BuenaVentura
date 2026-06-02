@@ -22,7 +22,7 @@ with app.app_context():
     ]
     
     for rol_data in roles_default:
-        if not Rol.query.get(rol_data['rol_id']):
+        if not db.session.get(Rol, rol_data['rol_id']):
             rol = Rol(rol_id=rol_data['rol_id'], description=rol_data['description'])
             db.session.add(rol)
             print(f"Rol creado: {rol_data['description']}")
@@ -35,7 +35,7 @@ with app.app_context():
     ]
     
     for estado_data in estados_default:
-        if not EstadoPrestamo.query.get(estado_data['estado_id']):
+        if not db.session.get(EstadoPrestamo, estado_data['estado_id']):
             estado = EstadoPrestamo(estado_id=estado_data['estado_id'], 
                                    description=estado_data['description'])
             db.session.add(estado)
