@@ -17,6 +17,14 @@ const LibrosList = () => {
         fetchLibros();
     }, [showInactivos]);
 
+    const isActivo = (libro) => {
+        return libro.activo === true || libro.activo === 1 || libro.activo === 'true' || libro.activo === '1';
+    };
+
+    const isInactivo = (libro) => {
+        return libro.activo === false || libro.activo === 0 || libro.activo === 'false' || libro.activo === '0' || libro.activo === null;
+    };
+
     const fetchLibros = async () => {
         setLoading(true);
         try {
@@ -27,7 +35,10 @@ const LibrosList = () => {
                 data = await LibroService.getAll();
             }
             if (data.success) {
+                console.log('Libros recibidos:', data.data);
                 setLibros(data.data);
+            } else {
+                console.error('Error en respuesta:', data.error);
             }
         } catch (error) {
             console.error('Error fetching libros:', error);
@@ -48,7 +59,7 @@ const LibrosList = () => {
                 setLibros(data.data);
             }
         } catch (error) {
-            console.error('Error en busqueda:', error);
+            console.error('Error searching:', error);
         } finally {
             setLoading(false);
         }
@@ -166,7 +177,7 @@ const LibrosList = () => {
                             </tr>
                         ) : (
                             libros.map((libro) => (
-                                <tr key={libro.libro_id} className={!libro.activo ? 'inactive-row' : ''}>
+                                <tr key={libro.libro_id} className={isInactivo(libro) ? 'inactive-row' : ''}>
                                     <td>{libro.libro_id}</td>
                                     <td className="title-cell">{libro.titulo}</td>
                                     <td>{libro.autor}</td>
@@ -179,12 +190,13 @@ const LibrosList = () => {
                                         </span>
                                     </td>
                                     <td>
-                                        <span className={`status ${libro.activo ? 'active' : 'inactive'}`}>
-                                            {libro.activo ? 'Activo' : 'Inactivo'}
+                                        <span className={`status ${isActivo(libro) ? 'active' : 'inactive'}`}>
+                                            {isActivo(libro) ? 'Activo' : 'Inactivo'}
                                         </span>
                                     </td>
                                     <td className="actions-cell">
-                                        {isGestorOrAdmin && libro.activo && (
+                                        {/* Si está ACTIVO: mostrar botones de Editar y Desactivar */}
+                                        {isActivo(libro) && isGestorOrAdmin && (
                                             <>
                                                 <button 
                                                     className="action-btn edit" 
@@ -202,7 +214,8 @@ const LibrosList = () => {
                                                 </button>
                                             </>
                                         )}
-                                        {isAdmin && !libro.activo && (
+                                        {/* Si está INACTIVO y es ADMIN: mostrar botón Reactivar */}
+                                        {isInactivo(libro) && isAdmin && (
                                             <button 
                                                 className="action-btn reactivate" 
                                                 onClick={() => handleReactivate(libro.libro_id, libro.titulo)}
@@ -211,8 +224,13 @@ const LibrosList = () => {
                                                 🔄 Reactivar
                                             </button>
                                         )}
-                                        {!isGestorOrAdmin && (
+                                        {/* Si es LECTOR o no tiene permisos y libro ACTIVO */}
+                                        {!isGestorOrAdmin && isActivo(libro) && (
                                             <span className="view-only">Solo lectura</span>
+                                        )}
+                                        {/* Si es LECTOR o no tiene permisos y libro INACTIVO */}
+                                        {!isGestorOrAdmin && isInactivo(libro) && (
+                                            <span className="view-only">No disponible</span>
                                         )}
                                     </td>
                                 </tr>

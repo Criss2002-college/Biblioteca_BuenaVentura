@@ -43,7 +43,8 @@ def libro_a_dict(libro):
         'anio_publicacion': libro.anio_publicacion,
         'cantidad_disponible': libro.cantidad_disponible,
         'isbn': libro.isbn,
-        'fecha_registro': libro.fecha_registro.strftime('%Y-%m-%d %H:%M:%S') if libro.fecha_registro else None
+        'fecha_registro': libro.fecha_registro.strftime('%Y-%m-%d %H:%M:%S') if libro.fecha_registro else None,
+        'activo': libro.activo
     }
 
 # ==================== ENDPOINTS ====================

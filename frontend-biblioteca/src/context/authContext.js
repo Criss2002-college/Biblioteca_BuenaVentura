@@ -40,12 +40,17 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const getToken = () => {
+        return localStorage.getItem('token');
+    };
+
     const value = {
         user,
         loading,
         error,
         login,
         logout,
+        getToken,
         isAuthenticated: authService.isAuthenticated(),
         isAdmin: user?.rol === 'Administrador',
         isGestor: user?.rol === 'Gestor',
