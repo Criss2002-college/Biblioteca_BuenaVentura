@@ -99,3 +99,16 @@
     color: #666;
     font-size: 14px;
 }
+
+.role-badge.lector {
+    background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+}
+
+.role-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}

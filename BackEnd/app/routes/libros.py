@@ -18,6 +18,13 @@ def verificar_permiso_gestion(usuario_id):
         return False
     return usuario.rol_id in [1, 2]
 
+def verificar_permiso_lectura(usuario_id):
+    """Verifica si el usuario tiene permiso para leer (todos los roles)"""
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return False
+    return usuario.rol_id in [1, 2, 3]
+
 def verificar_es_admin(usuario_id):
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
@@ -44,9 +51,9 @@ def libro_a_dict(libro):
 @bp.route('/', methods=['GET'])
 @jwt_required()
 def obtener_libros():
-    """Obtener todos los libros"""
+    """Obtener todos los libros ACTIVOS"""
     try:
-        libros = Libro.query.all()
+        libros = Libro.query.filter_by(activo=True).all()
         return jsonify({
             'success': True,
             'data': [libro_a_dict(libro) for libro in libros],
@@ -58,10 +65,10 @@ def obtener_libros():
 @bp.route('/<int:libro_id>', methods=['GET'])
 @jwt_required()
 def obtener_libro(libro_id):
-    """Obtener un libro por ID"""
+    """Obtener un libro por ID (solo si está activo)"""
     try:
         libro = Libro.query.get(libro_id)
-        if not libro:
+        if not libro or not libro.activo:
             return jsonify({'success': False, 'error': 'Libro no encontrado'}), 404
         
         return jsonify({'success': True, 'data': libro_a_dict(libro)}), 200
@@ -278,7 +285,7 @@ def reactivar_libro(libro_id):
 @bp.route('/buscar', methods=['GET'])
 @jwt_required()
 def buscar_libros():
-    """Buscar libros por título o ISBN"""
+    """Buscar libros ACTIVOS por título o ISBN"""
     try:
         query = request.args.get('q', '')
         if not query:
@@ -286,7 +293,8 @@ def buscar_libros():
         
         libros = Libro.query.filter(
             (Libro.titulo.like(f'%{query}%')) | 
-            (Libro.isbn.like(f'%{query}%'))
+            (Libro.isbn.like(f'%{query}%')),
+            Libro.activo == True
         ).all()
         
         return jsonify({
@@ -294,6 +302,6 @@ def buscar_libros():
             'data': [libro_a_dict(libro) for libro in libros],
             'total': len(libros)
         }), 200
-        
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

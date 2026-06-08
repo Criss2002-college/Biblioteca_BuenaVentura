@@ -48,7 +48,11 @@ export const AuthProvider = ({ children }) => {
         logout,
         isAuthenticated: authService.isAuthenticated(),
         isAdmin: user?.rol === 'Administrador',
-        isGestorOrAdmin: user?.rol === 'Administrador' || user?.rol === 'Gestor'
+        isGestor: user?.rol === 'Gestor',
+        isLector: user?.rol === 'Lector',
+        isGestorOrAdmin: user?.rol === 'Administrador' || user?.rol === 'Gestor',
+        canManage: user?.rol === 'Administrador' || user?.rol === 'Gestor',
+        canView: true 
     };
 
     return (
