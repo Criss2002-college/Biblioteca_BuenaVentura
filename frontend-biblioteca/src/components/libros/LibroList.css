@@ -1,123 +1,230 @@
-.libros-container {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+.libros-module {
+    padding: 24px;
+    background: #f5f7fa;
+    min-height: 100vh;
 }
 
-.libros-header {
+.module-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
 }
 
-.libros-header h2 {
-    color: #333;
+.header-left h2 {
+    color: #1a1a2e;
+    font-size: 24px;
+    margin-bottom: 4px;
 }
 
-.search-bar {
-    display: flex;
-    gap: 10px;
-}
-
-.search-bar input {
-    padding: 10px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    width: 300px;
+.subtitle {
+    color: #666;
     font-size: 14px;
 }
 
-.search-bar button {
-    padding: 10px 20px;
+.header-right {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
+    padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-.libros-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
-.libro-card {
+.toggle-inactivos {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.toggle-inactivos.active {
+    background: #dc2626;
+}
+
+.search-bar {
     background: white;
-    border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.libro-card:hover {
-    transform: translateY(-5px);
+.search-input-wrapper {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
-.libro-icon {
-    font-size: 48px;
-    text-align: center;
-    margin-bottom: 16px;
+.search-input-wrapper input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
 }
 
-.libro-card h3 {
-    color: #333;
-    margin-bottom: 12px;
-    text-align: center;
+.search-input-wrapper input:focus {
+    outline: none;
+    border-color: #667eea;
 }
 
-.libro-card p {
-    color: #666;
-    margin: 8px 0;
+.search-input-wrapper button {
+    padding: 12px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.clear-btn {
+    background: #9ca3af !important;
+}
+
+.table-container {
+    background: white;
+    border-radius: 12px;
+    overflow-x: auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.libros-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.libros-table thead {
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.libros-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
     font-size: 14px;
 }
 
-.disponibilidad {
+.libros-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #4b5563;
+    font-size: 14px;
+}
+
+.libros-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.inactive-row {
+    background: #fef2f2;
+    opacity: 0.8;
+}
+
+.title-cell {
     font-weight: 600;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #e0e0e0;
+    color: #1f2937;
 }
 
-.disponible {
-    color: #10b981;
+.availability {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.no-disponible {
-    color: #ef4444;
+.availability.available {
+    background: #d1fae5;
+    color: #065f46;
 }
 
-.acciones {
+.availability.unavailable {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status.active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.actions-cell {
     display: flex;
-    gap: 10px;
-    margin-top: 16px;
+    gap: 8px;
 }
 
-.edit-btn, .delete-btn {
-    flex: 1;
-    padding: 8px;
+.action-btn {
+    background: none;
     border: none;
-    border-radius: 6px;
     cursor: pointer;
-    font-weight: 600;
-}
-
-.edit-btn {
-    background: #3b82f6;
-    color: white;
-}
-
-.delete-btn {
-    background: #ef4444;
-    color: white;
-}
-
-.loading {
-    text-align: center;
-    padding: 50px;
     font-size: 18px;
-    color: #666;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.action-btn.edit:hover {
+    background: #e0e7ff;
+    transform: scale(1.1);
+}
+
+.action-btn.delete:hover {
+    background: #fee2e2;
+    transform: scale(1.1);
+}
+
+.action-btn.reactivate {
+    background: #10b981;
+    color: white;
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+.view-only {
+    color: #9ca3af;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.loading-cell, .empty-cell {
+    text-align: center;
+    padding: 40px !important;
+    color: #6b7280;
 }

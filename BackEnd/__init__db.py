@@ -106,7 +106,7 @@ with app.app_context():
     
     db.session.commit()
     
-    #eliminar en versión final, para no dar información a atacantes
+    #eliminar en versión final, solo lo tengo para validar levantamiento correcto en pruebas
     print("\n" + "="*50)
     print("BASE DE DATOS INICIALIZADA CON ÉXITO")
     print("="*50)

@@ -38,7 +38,7 @@ const Dashboard = () => {
                     <div className="card" onClick={() => navigate('/libros')}>
                         <div className="card-icon">📖</div>
                         <h3>Catálogo de Libros</h3>
-                        <p>Consultar libros disponibles</p>
+                        <p>Consultar y gestionar libros</p>
                     </div>
                     
                     {/* MÓDULOS SOLO PARA GESTOR Y ADMIN */}
