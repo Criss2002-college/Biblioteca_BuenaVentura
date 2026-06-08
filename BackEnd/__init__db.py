@@ -18,7 +18,8 @@ with app.app_context():
     # Insertar roles
     roles_default = [
         {'rol_id': 1, 'description': 'Gestor'},
-        {'rol_id': 2, 'description': 'Administrador'}
+        {'rol_id': 2, 'description': 'Administrador'},
+        {'rol_id': 3, 'description': 'Lector'}
     ]
     
     for rol_data in roles_default:
@@ -70,6 +71,22 @@ with app.app_context():
         gestor.set_password('gestor123')
         db.session.add(gestor)
         print("Usuario gestor creado: gestor@biblioteca.com / gestor123")
+
+    # Crear usuario lector por defecto
+    lector = Usuario.query.filter_by(dni=11111111).first()
+    if not lector:
+        lector = Usuario(
+            nombre='Lector',
+            apellidos='Prueba',
+            dni=11111111,
+            correo='lector@biblioteca.com',
+            telefono=111111111,
+            rol_id=3, 
+            activo=True
+        )
+    lector.set_password('lector123')
+    db.session.add(lector)
+    print("Usuario lector creado: lector@biblioteca.com / lector123")
     
     # Insertar autores
     autores_ejemplo = ['Gabriel García Márquez', 'Julio Cortázar', 'Mario Vargas Llosa']
@@ -89,7 +106,7 @@ with app.app_context():
     
     db.session.commit()
     
-    #eliminar en versión final, para no dar información a atacantes
+    #eliminar en versión final, solo lo tengo para validar levantamiento correcto en pruebas
     print("\n" + "="*50)
     print("BASE DE DATOS INICIALIZADA CON ÉXITO")
     print("="*50)
