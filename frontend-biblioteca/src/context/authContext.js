@@ -24,16 +24,35 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (correo, password) => {
-        try {
-            setError(null);
-            const data = await authService.login(correo, password);
-            setUser(data.usuario);
-            return { success: true };
-        } catch (error) {
-            setError(error.error || 'Error al iniciar sesión');
-            return { success: false, error: error.error };
+    try {
+        setError(null);
+        const data = await authService.login(correo, password);
+        
+        // Verificar si el usuario está activo
+        if (data.usuario && data.usuario.activo === false) {
+            return { 
+                success: false, 
+                error: 'Tu cuenta ha sido desactivada',
+                inactive: true 
+            };
         }
-    };
+        
+        setUser(data.usuario);
+        return { success: true };
+    } catch (error) {
+        // Verificar si es error por cuenta inactiva
+        if (error.response?.data?.inactive_account) {
+            setError('Cuenta desactivada');
+            return { 
+                success: false, 
+                error: error.response.data.error,
+                inactive: true 
+            };
+        }
+        setError(error.response?.data?.error || 'Error al iniciar sesión');
+        return { success: false, error: error.response?.data?.error };
+    }
+};
 
     const logout = () => {
         authService.logout();

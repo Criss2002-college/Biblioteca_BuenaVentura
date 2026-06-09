@@ -21,7 +21,7 @@ class Usuario(db.Model):
     usuario_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(100), nullable=False)
     apellidos = db.Column(db.String(100), nullable=False)
-    dni = db.Column(db.Integer, unique=True, nullable=False)
+    dni = db.Column(db.BIGINT, unique=True, nullable=False)
     correo = db.Column(db.String(100), unique=True)
     telefono = db.Column(db.Integer)
     password_hash = db.Column(db.String(255), nullable=False)
