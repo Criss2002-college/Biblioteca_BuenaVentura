@@ -18,12 +18,33 @@ def verificar_permiso_gestion(usuario_id):
         return False
     return usuario.rol_id in [1, 2]
 
+def verificar_permiso_actualizacion(usuario_id):
+    """Verifica si el usuario puede actualizar"""
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return False
+    return usuario.rol_id in [1, 2]
+
+def verificar_permiso_eliminacion(usuario_id):
+    """Verifica si el usuario puede eliminar"""
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return False
+    return usuario.rol_id == 2
+
 def verificar_es_admin(usuario_id):
     """Verifica si el usuario es administrador"""
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
         return False
     return usuario.rol_id == 2
+
+def verificar_es_gestor(usuario_id):
+    """Verifica si el usuario es gestor"""
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return False
+    return usuario.rol_id == 1
 
 def usuario_a_dict(usuario):
     """Convierte objeto Usuario a diccionario (sin datos sensibles)"""
@@ -132,9 +153,12 @@ def crear_usuario():
         if not data.get('password'):
             return jsonify({'success': False, 'error': 'La contraseña es obligatoria'}), 400
         
+        dni_value = data['dni']
+        
         # Verificar DNI único entre usuarios activos
-        if Usuario.query.filter_by(dni=data['dni'], activo=True).first():
-            return jsonify({'success': False, 'error': 'Ya existe un usuario activo con este DNI'}), 400
+        usuario_existente = Usuario.query.filter_by(dni=dni_value).first()
+        if usuario_existente:
+            return jsonify({'success': False, 'error': 'Ya existe un usuario con este DNI'}), 400
         
         if data.get('correo'):
             if Usuario.query.filter_by(correo=data['correo'], activo=True).first():
@@ -172,13 +196,14 @@ def crear_usuario():
 @bp.route('/<int:usuario_id>', methods=['PUT'])
 @jwt_required()
 def actualizar_usuario(usuario_id):
-    """Actualizar un usuario (solo Gestor/Admin o el propio usuario con límites)"""
+    """Actualizar un usuario"""
     try:
         current_user = obtener_usuario_actual()
         es_admin = verificar_es_admin(current_user['usuario_id'])
+        es_gestor = verificar_es_gestor(current_user['usuario_id'])
         es_mismo_usuario = current_user['usuario_id'] == usuario_id
         
-        if not es_admin and not es_mismo_usuario:
+        if not es_admin and not es_gestor and not es_mismo_usuario:
             return jsonify({
                 'success': False, 
                 'error': 'No tienes permiso para actualizar este usuario'
@@ -188,7 +213,6 @@ def actualizar_usuario(usuario_id):
         if not usuario:
             return jsonify({'success': False, 'error': 'Usuario no encontrado'}), 404
         
-        # No permitir modificar usuarios inactivos (solo admin para reactivarlo)
         if not usuario.activo and not es_admin:
             return jsonify({
                 'success': False, 
@@ -197,7 +221,8 @@ def actualizar_usuario(usuario_id):
         
         data = request.get_json()
         
-        if es_mismo_usuario and not es_admin and 'rol_id' in data:
+        # Si es el mismo usuario no puede cambiar rol
+        if es_mismo_usuario and not es_admin and not es_gestor and 'rol_id' in data:
             return jsonify({
                 'success': False, 
                 'error': 'No puedes cambiar tu propio rol'
@@ -216,9 +241,10 @@ def actualizar_usuario(usuario_id):
             if data['correo']:
                 otro_usuario = Usuario.query.filter_by(correo=data['correo'], activo=True).first()
                 if otro_usuario and otro_usuario.usuario_id != usuario_id:
-                    return jsonify({'success': False, 'error': 'Ya existe otro usuario activo con este correo'}), 400
+                    return jsonify({'success': False, 'error': 'Ya existe otro usuario con este correo'}), 400
             usuario.correo = data['correo']
         
+        # Solo admin puede cambiar rol y DNI
         if es_admin:
             if 'rol_id' in data:
                 rol = Rol.query.get(data['rol_id'])
@@ -228,13 +254,13 @@ def actualizar_usuario(usuario_id):
             
             if 'dni' in data and data['dni'] != usuario.dni:
                 if Usuario.query.filter_by(dni=data['dni'], activo=True).first():
-                    return jsonify({'success': False, 'error': 'Ya existe otro usuario activo con este DNI'}), 400
+                    return jsonify({'success': False, 'error': 'Ya existe otro usuario con este DNI'}), 400
                 usuario.dni = data['dni']
             
-            # Admin puede reactivar usuarios
             if 'activo' in data:
                 usuario.activo = data['activo']
         
+        # Actualizar contraseña
         if 'password' in data and data['password']:
             usuario.set_password(data['password'])
         
@@ -276,7 +302,6 @@ def eliminar_usuario(usuario_id):
         if not usuario.activo:
             return jsonify({'success': False, 'error': 'El usuario ya está inactivo'}), 400
         
-        # Verificar si el usuario tiene préstamos activos
         prestamos_activos = [p for p in usuario.prestamos_solicitados if p.id_estado == 1]
         if prestamos_activos:
             return jsonify({
@@ -284,13 +309,12 @@ def eliminar_usuario(usuario_id):
                 'error': 'No se puede eliminar el usuario porque tiene préstamos activos'
             }), 400
         
-        # Borrado lógico
         usuario.activo = False
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'Usuario desactivado exitosamente (borrado lógico)'
+            'message': 'Usuario desactivado exitosamente'
         }), 200
         
     except Exception as e:

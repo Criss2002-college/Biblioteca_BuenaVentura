@@ -17,11 +17,21 @@ def login():
     
     usuario = Usuario.query.filter_by(correo=data['correo']).first()
     
-    if not usuario or not usuario.check_password(data['password']):
+    # Verificar si el usuario existe
+    if not usuario:
         return jsonify({'error': 'Credenciales inválidas'}), 401
     
-    # IMPORTANTE: El identity debe ser un string, no un diccionario
-    # Convertimos la información del usuario a JSON string
+    # 🔴 NUEVO: Verificar si el usuario está activo
+    if not usuario.activo:
+        return jsonify({
+            'error': 'Tu cuenta ha sido desactivada. Por favor contacta al administrador.',
+            'inactive_account': True
+        }), 401
+    
+    # Verificar contraseña
+    if not usuario.check_password(data['password']):
+        return jsonify({'error': 'Credenciales inválidas'}), 401
+    
     user_identity = json.dumps({
         'usuario_id': usuario.usuario_id,
         'nombre': f"{usuario.nombre} {usuario.apellidos}",
@@ -30,7 +40,7 @@ def login():
     })
     
     access_token = create_access_token(
-        identity=user_identity,  # ← Ahora es un string
+        identity=user_identity,
         expires_delta=timedelta(hours=8)
     )
     
@@ -41,7 +51,8 @@ def login():
             'nombre': f"{usuario.nombre} {usuario.apellidos}",
             'correo': usuario.correo,
             'rol': usuario.rol.description,
-            'dni': usuario.dni
+            'dni': usuario.dni,
+            'activo': usuario.activo
         }
     }), 200
 

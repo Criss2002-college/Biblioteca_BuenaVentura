@@ -9,7 +9,8 @@ const Login = () => {
         password: ''
     });
     const [loading, setLoading] = useState(false);
-    const { login, error } = useAuth();
+    const [error, setError] = useState(null);
+    const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -17,18 +18,33 @@ const Login = () => {
             ...formData,
             [e.target.name]: e.target.value
         });
+        // Limpiar error cuando el usuario escribe
+        if (error) setError(null);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError(null);
         
-        const result = await login(formData.correo, formData.password);
-        
-        if (result.success) {
-            navigate('/dashboard');
+        try {
+            const result = await login(formData.correo, formData.password);
+            
+            if (result.success) {
+                navigate('/dashboard');
+            } else {
+
+                if (result.inactive) {
+                    setError('Tu cuenta ha sido desactivada. Por favor contacta al administrador.');
+                } else {
+                    setError(result.error || 'Credenciales inválidas. Verifica tu correo y contraseña.');
+                }
+            }
+        } catch (error) {
+            setError('Error de conexión. Intenta nuevamente.');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (
@@ -42,7 +58,7 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="login-form">
                     {error && (
                         <div className="error-message">
-                            ❌ {error}
+                            {error}
                         </div>
                     )}
                     
@@ -55,7 +71,7 @@ const Login = () => {
                             value={formData.correo}
                             onChange={handleChange}
                             required
-                            placeholder="amoleer@biblioteca.com"
+                            placeholder="admin@biblioteca.com"
                         />
                     </div>
                     
@@ -82,6 +98,10 @@ const Login = () => {
                 </form>
                 
                 <div className="login-footer">
+                    <hr />
+                    <p style={{ fontSize: '11px', color: '#dc2626' }}>
+                        Si tu cuenta está desactivada, no podrás acceder
+                    </p>
                 </div>
             </div>
         </div>
