@@ -30,10 +30,11 @@ with app.app_context():
     
     # Insertar estados de préstamo
     estados_default = [
-        {'estado_id': 1, 'description': 'ACTIVO'},
-        {'estado_id': 2, 'description': 'DEVUELTO'},
-        {'estado_id': 3, 'description': 'VENCIDO'}
-    ]
+    {'estado_id': 1, 'description': 'ACTIVO'},
+    {'estado_id': 2, 'description': 'DEVUELTO'},
+    {'estado_id': 3, 'description': 'VENCIDO'},
+    {'estado_id': 4, 'description': 'CANCELADO'}  
+]
     
     for estado_data in estados_default:
         if not db.session.get(EstadoPrestamo, estado_data['estado_id']):

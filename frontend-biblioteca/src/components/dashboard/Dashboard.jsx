@@ -59,7 +59,7 @@ const Dashboard = () => {
                     
                     {/* MÓDULO SOLO PARA LECTOR - Ver mis préstamos */}
                     {isLector && (
-                        <div className="card" onClick={() => navigate('/mis-prestamos')}>
+                        <div className="card" onClick={() => navigate('/prestamos')}>
                             <div className="card-icon">📋</div>
                             <h3>Mis Préstamos</h3>
                             <p>Ver historial de préstamos</p>

@@ -141,7 +141,9 @@ def obtener_prestamos_usuario(usuario_id):
                 'error': 'No tienes permiso para ver los préstamos de este usuario'
             }), 403
         
+        # Obtener todos los préstamos del usuario
         prestamos = Prestamo.query.filter_by(solicitante_id=usuario_id).all()
+        
         return jsonify({
             'success': True,
             'data': [prestamo_a_dict(p) for p in prestamos],
@@ -280,7 +282,7 @@ def devolver_prestamo(prestamo_id):
         
         # Registrar devolución
         prestamo.fecha_dev_real = datetime.utcnow()
-        prestamo.id_estado = 2  # DEVUELTO
+        prestamo.id_estado = 2  
         
         # Aumentar cantidad disponible del libro
         actualizar_disponibilidad_libro(prestamo.libro_id, 1)
@@ -317,12 +319,13 @@ def cancelar_prestamo(prestamo_id):
         if prestamo.id_estado != 1:
             return jsonify({'success': False, 'error': 'Solo se pueden cancelar préstamos activos'}), 400
         
-        # Cancelar préstamo (cambiar a estado cancelado o simplemente eliminar)
-        # En este caso, cambiamos a estado 3 (VENCIDO/otro) o lo eliminamos lógicamente
-        prestamo.id_estado = 3  # VENCIDO/CANCELADO
+        # Cambiar a estado CANCELADO
+        prestamo.id_estado = 4
         
         # Devolver el libro al inventario
-        actualizar_disponibilidad_libro(prestamo.libro_id, 1)
+        libro = Libro.query.get(prestamo.libro_id)
+        if libro:
+            libro.cantidad_disponible += 1
         
         db.session.commit()
         
@@ -338,7 +341,7 @@ def cancelar_prestamo(prestamo_id):
 @bp.route('/vencidos', methods=['GET'])
 @jwt_required()
 def obtener_prestamos_vencidos():
-    """Obtener préstamos vencidos (solo Gestor/Admin)"""
+    """Obtener préstamos vencidos (no incluir cancelados)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -350,7 +353,7 @@ def obtener_prestamos_vencidos():
         
         hoy = datetime.utcnow().date()
         prestamos_vencidos = Prestamo.query.filter(
-            Prestamo.id_estado == 1,
+            Prestamo.id_estado == 1, 
             Prestamo.fecha_dev_esperada < hoy
         ).all()
         
