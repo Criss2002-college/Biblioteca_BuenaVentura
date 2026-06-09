@@ -5,6 +5,7 @@ import Login from './components/login/Login';
 import Dashboard from './components/dashboard/Dashboard';
 import LibrosList from './components/libros/LibrosList';
 import UsuariosList from './components/Usuarios/UsuariosList';
+import PrestamosList from './components/Prestamos/PrestamosList';
 import PrivateRoute from './components/commons/PrivateRoute';
 import './App.css';
 
@@ -27,6 +28,11 @@ function App() {
                     <Route path="/usuarios" element={
                         <PrivateRoute>
                             <UsuariosList />
+                        </PrivateRoute>
+                    } />
+                    <Route path="/prestamos" element={
+                        <PrivateRoute>
+                            <PrestamosList />
                         </PrivateRoute>
                     } />
                     <Route path="/" element={<Navigate to="/login" />} />
