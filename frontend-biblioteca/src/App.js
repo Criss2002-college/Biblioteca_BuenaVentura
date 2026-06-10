@@ -1,6 +1,6 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/authContext';
+import React,  { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth  } from './context/authContext';
 import Login from './components/login/Login';
 import Dashboard from './components/dashboard/Dashboard';
 import LibrosList from './components/libros/LibrosList';
@@ -10,39 +10,76 @@ import ReportesList from './components/Reportes/ReportesList';
 import PrivateRoute from './components/commons/PrivateRoute';
 import './App.css';
 
+const NavigationGuard = ({ children }) => {
+    const { isAuthenticated } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+    
+        if (isAuthenticated && location.pathname === '/login') {
+            navigate('/dashboard', { replace: true });
+        }
+        
+        const handlePopState = () => {
+            if (!isAuthenticated && location.pathname !== '/login') {
+                navigate('/login', { replace: true });
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [isAuthenticated, location, navigate]);
+
+    return children;
+};
+
+
 function App() {
     return (
         <Router>
             <AuthProvider>
+                <NavigationGuard>
                 <Routes>
+           
                     <Route path="/login" element={<Login />} />
+                    
+               
                     <Route path="/dashboard" element={
                         <PrivateRoute>
                             <Dashboard />
                         </PrivateRoute>
                     } />
+                    
                     <Route path="/libros" element={
                         <PrivateRoute>
                             <LibrosList />
                         </PrivateRoute>
                     } />
+                    
                     <Route path="/usuarios" element={
-                        <PrivateRoute>
+                        <PrivateRoute roles={['Administrador', 'Gestor']}>
                             <UsuariosList />
                         </PrivateRoute>
                     } />
+                    
                     <Route path="/prestamos" element={
                         <PrivateRoute>
                             <PrestamosList />
                         </PrivateRoute>
                     } />
+                    
                     <Route path="/reportes" element={
-                        <PrivateRoute>
+                        <PrivateRoute roles={['Administrador']}>
                             <ReportesList />
                         </PrivateRoute>
                     } />
+                    
+           
                     <Route path="/" element={<Navigate to="/login" />} />
+                    <Route path="*" element={<Navigate to="/login" />} />
                 </Routes>
+                </NavigationGuard>
             </AuthProvider>
         </Router>
     );

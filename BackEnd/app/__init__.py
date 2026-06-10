@@ -6,7 +6,6 @@ from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from .config import config
 
-# Inicializar extensiones
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
@@ -15,17 +14,14 @@ bcrypt = Bcrypt()
 def create_app(config_name='default'):
     app = Flask(__name__)
     
-    # Configuración
     app.config.from_object(config[config_name])
     
-    # Inicializar extensiones
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app)
     jwt.init_app(app)
     bcrypt.init_app(app)
     
-    # Registrar blueprints (solo los que existen)
     from .routes import auth, libros, autores, editoriales, usuarios, prestamos
     
     app.register_blueprint(auth.bp)

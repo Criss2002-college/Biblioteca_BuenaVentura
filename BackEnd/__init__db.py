@@ -3,7 +3,6 @@ from app import create_app, db
 from app.models import Rol, EstadoPrestamo, Autor, Editorial, Usuario
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
 load_dotenv()
 
 app = create_app()
@@ -12,10 +11,8 @@ with app.app_context():
     print("Inicializando base de datos")
     print(f"Conectando a: {os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '3306')}")
     
-    # Crear todas las tablas
     db.create_all()
     
-    # Insertar roles
     roles_default = [
         {'rol_id': 1, 'description': 'Gestor'},
         {'rol_id': 2, 'description': 'Administrador'},
@@ -28,7 +25,6 @@ with app.app_context():
             db.session.add(rol)
             print(f"Rol creado: {rol_data['description']}")
     
-    # Insertar estados de préstamo
     estados_default = [
     {'estado_id': 1, 'description': 'ACTIVO'},
     {'estado_id': 2, 'description': 'DEVUELTO'},
@@ -43,7 +39,6 @@ with app.app_context():
             db.session.add(estado)
             print(f"Estado creado: {estado_data['description']}")
     
-    # Crear usuario administrador por defecto
     admin = Usuario.query.filter_by(dni=12345678).first()
     if not admin:
         admin = Usuario(
@@ -58,7 +53,6 @@ with app.app_context():
         db.session.add(admin)
         print("Usuario administrador creado: admin@biblioteca.com / admin123")
     
-    # Crear usuario gestor por defecto
     gestor = Usuario.query.filter_by(dni=87654321).first()
     if not gestor:
         gestor = Usuario(
@@ -73,7 +67,6 @@ with app.app_context():
         db.session.add(gestor)
         print("Usuario gestor creado: gestor@biblioteca.com / gestor123")
 
-    # Crear usuario lector por defecto
     lector = Usuario.query.filter_by(dni=11111111).first()
     if not lector:
         lector = Usuario(
@@ -89,7 +82,6 @@ with app.app_context():
     db.session.add(lector)
     print("Usuario lector creado: lector@biblioteca.com / lector123")
     
-    # Insertar autores
     autores_ejemplo = ['Gabriel García Márquez', 'Julio Cortázar', 'Mario Vargas Llosa']
     for autor_nombre in autores_ejemplo:
         if not Autor.query.filter_by(description=autor_nombre).first():
@@ -97,7 +89,6 @@ with app.app_context():
             db.session.add(autor)
             print(f"Autor creado: {autor_nombre}")
     
-    # Insertar editoriales
     editoriales_ejemplo = ['Penguin Random House', 'Planeta', 'Alfaguara']
     for editorial_nombre in editoriales_ejemplo:
         if not Editorial.query.filter_by(description=editorial_nombre).first():
@@ -107,13 +98,3 @@ with app.app_context():
     
     db.session.commit()
     
-    #eliminar en versión final, solo lo tengo para validar levantamiento correcto en pruebas
-    print("\n" + "="*50)
-    print("BASE DE DATOS INICIALIZADA CON ÉXITO")
-    print("="*50)
-    print(f"Base de datos: {os.getenv('DB_NAME', 'biblioteca')}")
-    print(f"Host: {os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '3306')}")
-    print("\nCREDENCIALES DE PRUEBA:")
-    print(" Administrador: admin@biblioteca.com / admin123")
-    print("Gestor: gestor@biblioteca.com / gestor123")
-    print("="*50)
