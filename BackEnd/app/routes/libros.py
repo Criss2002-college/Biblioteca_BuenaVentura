@@ -7,19 +7,16 @@ import json
 bp = Blueprint('libros', __name__, url_prefix='/api/libros')
 
 def obtener_usuario_actual():
-    """Obtiene el usuario actual desde el token"""
     identity = get_jwt_identity()
     return json.loads(identity)
 
 def verificar_permiso_gestion(usuario_id):
-    """Verifica si el usuario tiene permisos de gestor o admin"""
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
         return False
     return usuario.rol_id in [1, 2]
 
 def verificar_permiso_lectura(usuario_id):
-    """Verifica si el usuario tiene permiso para leer (todos los roles)"""
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
         return False
@@ -32,7 +29,6 @@ def verificar_es_admin(usuario_id):
     return usuario.rol_id == 2
 
 def libro_a_dict(libro):
-    """Convierte objeto Libro a diccionario"""
     return {
         'libro_id': libro.libro_id,
         'titulo': libro.titulo,
@@ -52,7 +48,6 @@ def libro_a_dict(libro):
 @bp.route('/', methods=['GET'])
 @jwt_required()
 def obtener_libros():
-    """Obtener todos los libros ACTIVOS"""
     try:
         libros = Libro.query.filter_by(activo=True).all()
         return jsonify({
@@ -66,7 +61,6 @@ def obtener_libros():
 @bp.route('/<int:libro_id>', methods=['GET'])
 @jwt_required()
 def obtener_libro(libro_id):
-    """Obtener un libro por ID (solo si está activo)"""
     try:
         libro = Libro.query.get(libro_id)
         if not libro or not libro.activo:
@@ -79,7 +73,6 @@ def obtener_libro(libro_id):
 @bp.route('/inactivos', methods=['GET'])
 @jwt_required()
 def obtener_libros_inactivos():
-    """Obtener todos los libros inactivos (solo Administrador)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -101,7 +94,6 @@ def obtener_libros_inactivos():
 @bp.route('/', methods=['POST'])
 @jwt_required()
 def crear_libro():
-    """Crear un nuevo libro (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -155,7 +147,6 @@ def crear_libro():
 @bp.route('/<int:libro_id>', methods=['PUT'])
 @jwt_required()
 def actualizar_libro(libro_id):
-    """Actualizar un libro (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -212,7 +203,6 @@ def actualizar_libro(libro_id):
 @bp.route('/<int:libro_id>', methods=['DELETE'])
 @jwt_required()
 def eliminar_libro(libro_id):
-    """Borrado lógico de libro (solo Administrador)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -253,7 +243,6 @@ def eliminar_libro(libro_id):
 @bp.route('/<int:libro_id>/reactivar', methods=['PUT'])
 @jwt_required()
 def reactivar_libro(libro_id):
-    """Reactivar un libro inactivo (solo Administrador)"""
     try:
         current_user = obtener_usuario_actual()
         

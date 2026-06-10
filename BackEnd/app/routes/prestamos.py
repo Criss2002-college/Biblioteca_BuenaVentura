@@ -47,7 +47,6 @@ def prestamo_a_dict(prestamo):
     }
 
 def usuario_tiene_prestamo_activo(usuario_id):
-    """Verifica si un usuario tiene un préstamo activo"""
     prestamo_activo = Prestamo.query.filter_by(
         solicitante_id=usuario_id, 
         id_estado=1  # estado ACTIVO
@@ -55,7 +54,6 @@ def usuario_tiene_prestamo_activo(usuario_id):
     return prestamo_activo is not None
 
 def libro_tiene_prestamo_activo_hoy(libro_id, fecha_prestamo):
-    """Verifica si un libro ya fue prestado hoy"""
     inicio_dia = datetime(fecha_prestamo.year, fecha_prestamo.month, fecha_prestamo.day, 0, 0, 0)
     fin_dia = datetime(fecha_prestamo.year, fecha_prestamo.month, fecha_prestamo.day, 23, 59, 59)
     
@@ -68,14 +66,12 @@ def libro_tiene_prestamo_activo_hoy(libro_id, fecha_prestamo):
     return prestamo_hoy is not None
 
 def libro_tiene_ejemplares_disponibles(libro_id):
-    """Verifica si el libro tiene ejemplares disponibles"""
     libro = Libro.query.get(libro_id)
     if not libro:
         return False
     return libro.cantidad_disponible > 0
 
 def actualizar_disponibilidad_libro(libro_id, cantidad):
-    """Actualiza la cantidad disponible de un libro"""
     libro = Libro.query.get(libro_id)
     if libro:
         libro.cantidad_disponible += cantidad
@@ -86,7 +82,6 @@ def actualizar_disponibilidad_libro(libro_id, cantidad):
 @bp.route('/', methods=['GET'])
 @jwt_required()
 def obtener_prestamos():
-    """Obtener todos los préstamos (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -108,7 +103,6 @@ def obtener_prestamos():
 @bp.route('/activos', methods=['GET'])
 @jwt_required()
 def obtener_prestamos_activos():
-    """Obtener préstamos activos (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -130,7 +124,6 @@ def obtener_prestamos_activos():
 @bp.route('/usuario/<int:usuario_id>', methods=['GET'])
 @jwt_required()
 def obtener_prestamos_usuario(usuario_id):
-    """Obtener préstamos de un usuario específico"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -155,7 +148,6 @@ def obtener_prestamos_usuario(usuario_id):
 @bp.route('/libro/<int:libro_id>', methods=['GET'])
 @jwt_required()
 def obtener_prestamos_libro(libro_id):
-    """Obtener historial de préstamos de un libro (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -177,7 +169,6 @@ def obtener_prestamos_libro(libro_id):
 @bp.route('/', methods=['POST'])
 @jwt_required()
 def crear_prestamo():
-    """Crear un nuevo préstamo (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -201,7 +192,7 @@ def crear_prestamo():
         if not usuario:
             return jsonify({'success': False, 'error': 'El usuario no existe o está inactivo'}), 400
         
-        # REGLA: Un usuario no puede tener más de un préstamo activo
+        #validación usuario no puede tener más de un prestamo activo
         if usuario_tiene_prestamo_activo(data['solicitante_id']):
             return jsonify({
                 'success': False, 
@@ -213,7 +204,7 @@ def crear_prestamo():
         if not libro:
             return jsonify({'success': False, 'error': 'El libro no existe o está inactivo'}), 400
         
-        # REGLA: No se puede asignar un libro sin ejemplares disponibles
+        # validación de disponibilidad de libros
         if not libro_tiene_ejemplares_disponibles(data['libro_id']):
             return jsonify({
                 'success': False, 
@@ -222,18 +213,16 @@ def crear_prestamo():
         
         fecha_prestamo = datetime.utcnow()
         
-        # REGLA: Un libro no puede estar asignado a más de una persona el mismo día
+        #validación de libro no asignable a otra persona el mismo día
         if libro_tiene_prestamo_activo_hoy(data['libro_id'], fecha_prestamo):
             return jsonify({
                 'success': False, 
                 'error': 'Este libro ya fue prestado hoy. Solo puede ser prestado una vez por día.'
             }), 400
         
-        # Fecha de devolución esperada (5 días por defecto)
         dias_prestamo = data.get('dias_prestamo', 5)
         fecha_dev_esperada = fecha_prestamo + timedelta(days=dias_prestamo)
         
-        # Crear préstamo
         prestamo = Prestamo(
             solicitante_id=data['solicitante_id'],
             gestor_id=current_user['usuario_id'],
@@ -263,7 +252,6 @@ def crear_prestamo():
 @bp.route('/<int:prestamo_id>/devolver', methods=['PUT'])
 @jwt_required()
 def devolver_prestamo(prestamo_id):
-    """Registrar devolución de un préstamo (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -302,7 +290,6 @@ def devolver_prestamo(prestamo_id):
 @bp.route('/<int:prestamo_id>', methods=['DELETE'])
 @jwt_required()
 def cancelar_prestamo(prestamo_id):
-    """Cancelar un préstamo (solo Administrador)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -319,7 +306,7 @@ def cancelar_prestamo(prestamo_id):
         if prestamo.id_estado != 1:
             return jsonify({'success': False, 'error': 'Solo se pueden cancelar préstamos activos'}), 400
         
-        # Cambiar a estado CANCELADO
+        # estado cancelado
         prestamo.id_estado = 4
         
         # Devolver el libro al inventario
@@ -341,7 +328,6 @@ def cancelar_prestamo(prestamo_id):
 @bp.route('/vencidos', methods=['GET'])
 @jwt_required()
 def obtener_prestamos_vencidos():
-    """Obtener préstamos vencidos (no incluir cancelados)"""
     try:
         current_user = obtener_usuario_actual()
         

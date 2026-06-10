@@ -9,7 +9,7 @@ bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 @bp.route('/login', methods=['POST'])
 def login():
-    """Endpoint de autenticación"""
+
     data = request.get_json()
     
     if not data or not data.get('correo') or not data.get('password'):
@@ -17,18 +17,16 @@ def login():
     
     usuario = Usuario.query.filter_by(correo=data['correo']).first()
     
-    # Verificar si el usuario existe
     if not usuario:
         return jsonify({'error': 'Credenciales inválidas'}), 401
     
-    # 🔴 NUEVO: Verificar si el usuario está activo
+
     if not usuario.activo:
         return jsonify({
             'error': 'Tu cuenta ha sido desactivada. Por favor contacta al administrador.',
             'inactive_account': True
         }), 401
     
-    # Verificar contraseña
     if not usuario.check_password(data['password']):
         return jsonify({'error': 'Credenciales inválidas'}), 401
     
@@ -59,7 +57,7 @@ def login():
 @bp.route('/perfil', methods=['GET'])
 @jwt_required()
 def perfil():
-    """Obtener perfil del usuario autenticado"""
+
     current_user_identity = get_jwt_identity()
     # Decodificar el JSON string
     current_user = json.loads(current_user_identity)

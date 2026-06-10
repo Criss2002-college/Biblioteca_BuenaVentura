@@ -7,47 +7,40 @@ import json
 bp = Blueprint('usuarios', __name__, url_prefix='/api/usuarios')
 
 def obtener_usuario_actual():
-    """Obtiene el usuario actual desde el token"""
     identity = get_jwt_identity()
     return json.loads(identity)
 
 def verificar_permiso_gestion(usuario_id):
-    """Verifica si el usuario tiene permisos de gestor o admin"""
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
         return False
     return usuario.rol_id in [1, 2]
 
 def verificar_permiso_actualizacion(usuario_id):
-    """Verifica si el usuario puede actualizar"""
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
         return False
     return usuario.rol_id in [1, 2]
 
 def verificar_permiso_eliminacion(usuario_id):
-    """Verifica si el usuario puede eliminar"""
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
         return False
     return usuario.rol_id == 2
 
 def verificar_es_admin(usuario_id):
-    """Verifica si el usuario es administrador"""
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
         return False
     return usuario.rol_id == 2
 
 def verificar_es_gestor(usuario_id):
-    """Verifica si el usuario es gestor"""
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
         return False
     return usuario.rol_id == 1
 
 def usuario_a_dict(usuario):
-    """Convierte objeto Usuario a diccionario (sin datos sensibles)"""
     return {
         'usuario_id': usuario.usuario_id,
         'nombre': usuario.nombre,
@@ -66,7 +59,6 @@ def usuario_a_dict(usuario):
 @bp.route('/', methods=['GET'])
 @jwt_required()
 def obtener_usuarios():
-    """Obtener todos los usuarios activos (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -89,7 +81,6 @@ def obtener_usuarios():
 @bp.route('/inactivos', methods=['GET'])
 @jwt_required()
 def obtener_usuarios_inactivos():
-    """Obtener todos los usuarios inactivos (solo Administrador)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -111,7 +102,6 @@ def obtener_usuarios_inactivos():
 @bp.route('/<int:usuario_id>', methods=['GET'])
 @jwt_required()
 def obtener_usuario(usuario_id):
-    """Obtener un usuario por ID (solo Gestor/Admin o el propio usuario)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -132,7 +122,6 @@ def obtener_usuario(usuario_id):
 @bp.route('/', methods=['POST'])
 @jwt_required()
 def crear_usuario():
-    """Crear un nuevo usuario (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -176,7 +165,7 @@ def crear_usuario():
             correo=data.get('correo'),
             telefono=data.get('telefono'),
             rol_id=rol_id,
-            activo=True  #activo por defecto
+            activo=True 
         )
         usuario.set_password(data['password'])
         
@@ -196,7 +185,6 @@ def crear_usuario():
 @bp.route('/<int:usuario_id>', methods=['PUT'])
 @jwt_required()
 def actualizar_usuario(usuario_id):
-    """Actualizar un usuario"""
     try:
         current_user = obtener_usuario_actual()
         es_admin = verificar_es_admin(current_user['usuario_id'])
@@ -244,7 +232,6 @@ def actualizar_usuario(usuario_id):
                     return jsonify({'success': False, 'error': 'Ya existe otro usuario con este correo'}), 400
             usuario.correo = data['correo']
         
-        # Solo admin puede cambiar rol y DNI
         if es_admin:
             if 'rol_id' in data:
                 rol = Rol.query.get(data['rol_id'])
@@ -260,7 +247,6 @@ def actualizar_usuario(usuario_id):
             if 'activo' in data:
                 usuario.activo = data['activo']
         
-        # Actualizar contraseña
         if 'password' in data and data['password']:
             usuario.set_password(data['password'])
         
@@ -279,7 +265,6 @@ def actualizar_usuario(usuario_id):
 @bp.route('/<int:usuario_id>', methods=['DELETE'])
 @jwt_required()
 def eliminar_usuario(usuario_id):
-    """Borrado lógico de usuario (solo Administrador)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -324,7 +309,6 @@ def eliminar_usuario(usuario_id):
 @bp.route('/<int:usuario_id>/reactivar', methods=['PUT'])
 @jwt_required()
 def reactivar_usuario(usuario_id):
-    """Reactivar un usuario inactivo (solo Administrador)"""
     try:
         current_user = obtener_usuario_actual()
         
@@ -357,7 +341,6 @@ def reactivar_usuario(usuario_id):
 @bp.route('/roles', methods=['GET'])
 @jwt_required()
 def obtener_roles():
-    """Obtener lista de roles disponibles (solo Gestor/Admin)"""
     try:
         current_user = obtener_usuario_actual()
         
