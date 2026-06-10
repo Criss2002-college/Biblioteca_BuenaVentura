@@ -69,10 +69,10 @@ const Dashboard = () => {
                     {/* MÓDULO SOLO PARA ADMIN */}
                     {isAdmin && (
                         <div className="card" onClick={() => navigate('/reportes')}>
-                            <div className="card-icon">📊</div>
-                            <h3>Reportes</h3>
-                            <p>Consultar reportes del sistema</p>
-                        </div>
+                         <div className="card-icon">📊</div>
+                         <h3>Reportes</h3>
+                         <p>Consultar reportes del sistema</p>
+                     </div>
                     )}
                 </div>
             </div>
