@@ -6,6 +6,7 @@ import Dashboard from './components/dashboard/Dashboard';
 import LibrosList from './components/libros/LibrosList';
 import UsuariosList from './components/Usuarios/UsuariosList';
 import PrestamosList from './components/Prestamos/PrestamosList';
+import ReportesList from './components/Reportes/ReportesList';
 import PrivateRoute from './components/commons/PrivateRoute';
 import './App.css';
 
@@ -33,6 +34,11 @@ function App() {
                     <Route path="/prestamos" element={
                         <PrivateRoute>
                             <PrestamosList />
+                        </PrivateRoute>
+                    } />
+                    <Route path="/reportes" element={
+                        <PrivateRoute>
+                            <ReportesList />
                         </PrivateRoute>
                     } />
                     <Route path="/" element={<Navigate to="/login" />} />
